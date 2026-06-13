@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Raq RP – Weapon Wheelspin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --bg:      #07070F;
+  --surface: #0F0F1C;
+  --card:    #16162A;
+  --border:  #25253A;
+  --text:    #E6E6F0;
+  --muted:   #5A5A7A;
+  --t0:  #6B7280;
+  --t1:  #3B82F6;
+  --t15: #A855F7;
+  --t2:  #F59E0B;
+  --gold: #FFB800;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+header {
+  text-align: center;
+  padding: 52px 20px 36px;
+  background: linear-gradient(180deg, #0E0E28 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.8rem, 8vw, 5rem);
+  letter-spacing: 0.1em;
+  background: linear-gradient(130deg, #FFB800 20%, #FF5500 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.tagline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+/* ── FILTERS ── */
+.filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 28px 20px;
+}
+.filter-btn {
+  padding: 7px 18px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+.filter-btn:hover { color: var(--text); border-color: #44445A; }
+.filter-btn.active { color: #050508; border-color: transparent; }
+.filter-btn[data-tier="all"].active  { background: var(--text); }
+.filter-btn[data-tier="t0"].active   { background: var(--t0); }
+.filter-btn[data-tier="t1"].active   { background: var(--t1); }
+.filter-btn[data-tier="t15"].active  { background: var(--t15); }
+.filter-btn[data-tier="t2"].active   { background: var(--t2); }
+
+/* ── WHEEL ── */
+.wheel-wrap {
+  position: relative;
+  width: 100%;
+  height: 130px;
+  overflow: hidden;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+/* golden selector box at center */
+.wheel-selector {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 50%;
+  width: 124px;
+  transform: translateX(-50%);
+  border: 2px solid var(--gold);
+  border-radius: 7px;
+  box-shadow: 0 0 24px rgba(255,184,0,0.35), inset 0 0 12px rgba(255,184,0,0.06);
+  pointer-events: none;
+  z-index: 10;
+}
+/* edge fades */
+.wheel-fade {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 140px;
+  z-index: 5;
+  pointer-events: none;
+}
+.wheel-fade.left  { left:  0; background: linear-gradient(90deg, var(--surface) 20%, transparent); }
+.wheel-fade.right { right: 0; background: linear-gradient(270deg, var(--surface) 20%, transparent); }
+
+.wheel-strip {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 8px;
+  padding-left: 8px;
+  will-change: transform;
+  transform: translateX(0);
+}
+.wcard {
+  flex-shrink: 0;
+  width: 116px;
+  height: 106px;
+  border-radius: 7px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  text-align: center;
+  gap: 6px;
+}
+.wcard.winner {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 16px rgba(255,184,0,0.25);
+}
+.wcard .badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+}
+.wcard .gname {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+/* ── SPIN BUTTON ── */
+.controls {
+  display: flex;
+  justify-content: center;
+  padding: 24px 20px 8px;
+}
+.spin-btn {
+  padding: 13px 64px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.7rem;
+  letter-spacing: 0.18em;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(130deg, #FFB800 0%, #FF5500 100%);
+  color: #05050A;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 24px rgba(255,184,0,0.28);
+}
+.spin-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(255,184,0,0.42);
+}
+.spin-btn:active:not(:disabled) { transform: translateY(0); }
+.spin-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ── RESULT ── */
+.result-wrap {
+  max-width: 520px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+}
+.result-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 24px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.result-card.show { opacity: 1; transform: translateY(0); }
+.result-tier-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.result-gun-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.result-placeholder {
+  color: var(--muted);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  max-width: 860px;
+  margin: 36px auto 0;
+  padding: 0 20px;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+.section-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* ── HISTORY ── */
+.history-wrap {
+  max-width: 580px;
+  margin: 28px auto 0;
+  padding: 0 20px;
+  display: none;
+}
+.history-list { display: flex; flex-direction: column; gap: 6px; }
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.history-gun {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 600;
+}
+.history-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 3px 9px;
+  border-radius: 3px;
+}
+
+/* ── BROWSE ── */
+.browse-wrap {
+  max-width: 860px;
+  margin: 32px auto 64px;
+  padding: 0 20px;
+}
+.tier-block { margin-bottom: 30px; }
+.tier-block-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.tier-block-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
+}
+.tier-block-sub {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  border: 1px solid;
+  cursor: default;
+  transition: transform 0.1s;
+}
+.pill:hover { transform: scale(1.04); }
+.pill.t0  { background: rgba(107,114,128,0.1); border-color: rgba(107,114,128,0.3); color: #9CA3AF; }
+.pill.t1  { background: rgba(59,130,246,0.1);  border-color: rgba(59,130,246,0.3);  color: #60A5FA; }
+.pill.t15 { background: rgba(168,85,247,0.1);  border-color: rgba(168,85,247,0.3);  color: #C084FC; }
+.pill.t2  { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.3);  color: #FCD34D; }
+
+/* tier badge color map */
+.badge.t0  { background: rgba(107,114,128,0.2); color: #9CA3AF; }
+.badge.t1  { background: rgba(59,130,246,0.2);  color: #60A5FA; }
+.badge.t15 { background: rgba(168,85,247,0.2);  color: #C084FC; }
+.badge.t2  { background: rgba(245,158,11,0.2);  color: #FCD34D; }
+
+@media (max-width: 520px) {
+  .spin-btn { padding: 12px 40px; font-size: 1.4rem; }
+  .wheel-fade { width: 80px; }
+}
+```
+
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+
+<header>
+  <div class="logo">The Raq RP</div>
+  <div class="tagline">Weapon Wheelspin</div>
+</header>
+
+<!-- FILTERS -->
+
+<div class="filters">
+  <button class="filter-btn active" data-tier="all">All Tiers</button>
+  <button class="filter-btn" data-tier="t0">🚶 Tier 0</button>
+  <button class="filter-btn" data-tier="t1">🔫 Tier 1</button>
+  <button class="filter-btn" data-tier="t15">⚡ Tier 1.5</button>
+  <button class="filter-btn" data-tier="t2">💎 Tier 2</button>
+</div>
+
+<!-- WHEEL -->
+
+<div class="wheel-wrap">
+  <div class="wheel-selector"></div>
+  <div class="wheel-fade left"></div>
+  <div class="wheel-fade right"></div>
+  <div class="wheel-strip" id="strip"></div>
+</div>
+
+<!-- SPIN BTN -->
+
+<div class="controls">
+  <button class="spin-btn" id="spinBtn">SPIN</button>
+</div>
+
+<!-- RESULT -->
+
+<div class="result-wrap">
+  <div class="result-card" id="resultCard">
+    <span class="result-placeholder">Hit SPIN to receive your weapon</span>
+  </div>
+</div>
+
+<!-- HISTORY -->
+
+<div class="history-wrap" id="historyWrap">
+  <hr class="divider" style="margin:0 0 20px;" />
+  <div class="section-label">Recent Spins</div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- BROWSE -->
+
+<div class="browse-wrap">
+  <hr class="divider" style="margin:0 0 24px;" />
+  <div class="section-label">All Weapons</div>
+  <div id="browseGrid"></div>
+</div>
+
+<script>
+  /* ── DATA ── */
+  const TIERS = {
+    t0: {
+      name: 'Tier 0', emoji: '🚶', label: 'Basic Handguns',
+      color: '#6B7280',
+      guns: ['Barretta','P320','1911','G2C','Walther','Hi-Point']
+    },
+    t1: {
+      name: 'Tier 1', emoji: '🔫', label: 'Standard Sidearms',
+      color: '#3B82F6',
+      guns: ['G17','Five-Seven','XD Compact','G27']
+    },
+    t15: {
+      name: 'Tier 1.5', emoji: '⚡️', label: 'Modified Sidearms',
+      color: '#A855F7',
+      guns: ['G17 (Extended Mag)','Five-Seven (Laser)','G17 (Flashlight / Tan Slide)','Glock 19 (Taran Tactical)','Glock 26 Binary']
+    },
+    t2: {
+      name: 'Tier 2', emoji: '💎', label: 'Advanced / Automatic',
+      color: '#F59E0B',
+      guns: ['Glock 17 (Switch / Extended)','MPX','Draco','ARP','Glock Switch','Kriss Vector']
+    }
+  };
+
+  /* card width (116px) + gap (8px) = 124px per slot */
+  const SLOT_W     = 124;
+  const WIN_IDX    = 50;   /* winner will land at this position in the strip */
+  const STRIP_LEN  = 65;
+
+  let activeTiers = ['t0','t1','t15','t2'];
+  let spinning    = false;
+  let history     = [];
+
+  /* ── HELPERS ── */
+  function buildPool() {
+    const pool = [];
+    activeTiers.forEach(t => TIERS[t].guns.forEach(g => pool.push({ gun: g, tier: t })));
+    return pool;
+  }
+
+  function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function makeCard(item, winner = false) {
+    const tier = TIERS[item.tier];
+    const div  = document.createElement('div');
+    div.className = 'wcard' + (winner ? ' winner' : '');
+    div.style.borderColor = winner ? tier.color : '';
+    div.innerHTML = `
+      <span class="badge ${item.tier}">${tier.name}</span>
+      <span class="gname">${item.gun}</span>`;
+    return div;
+  }
+
+  /* ── INIT STRIP (idle state) ── */
+  function initStrip() {
+    const strip = document.getElementById('strip');
+    strip.innerHTML = '';
+    strip.style.transition = 'none';
+    strip.style.transform  = 'translateX(0)';
+    const pool = buildPool();
+    for (let i = 0; i < 9; i++) strip.appendChild(makeCard(randFrom(pool)));
+  }
+
+  /* ── SPIN ── */
+  function spin() {
+    if (spinning) return;
+    const pool = buildPool();
+    if (!pool.length) return;
+
+    spinning = true;
+    document.getElementById('spinBtn').disabled = true;
+
+    /* hide old result */
+    const rc = document.getElementById('resultCard');
+    rc.classList.remove('show');
+
+    const winner = randFrom(pool);
+
+    /* build strip array */
+    const items = [];
+    for (let i = 0; i < STRIP_LEN; i++) items.push(randFrom(pool));
+    items[WIN_IDX] = winner;
+
+    /* render */
+    const strip = document.getElementById('strip');
+    strip.innerHTML    = '';
+    strip.style.transition = 'none';
+    strip.style.transform  = 'translateX(0)';
+    items.forEach((item, i) => strip.appendChild(makeCard(item, i === WIN_IDX)));
+
+    void strip.offsetWidth; /* force reflow */
+
+    /* calculate target so WIN_IDX card is behind the selector */
+    const containerW  = strip.parentElement.offsetWidth;
+    const selectorCX  = containerW / 2;          /* center x of selector */
+    /* card's own center in the strip (at translateX=0):
+       left = 8 (padding) + idx * SLOT_W, center = left + 58 (half of 116px) */
+    const cardCX = 8 + WIN_IDX * SLOT_W + 58;
+    const targetX = selectorCX - cardCX;
+
+    strip.style.transition = 'transform 5.8s cubic-bezier(0.07, 0, 0.04, 1)';
+    strip.style.transform  = `translateX(${targetX}px)`;
+
+    setTimeout(() => showResult(winner), 6100);
+  }
+
+  function showResult(winner) {
+    const tier = TIERS[winner.tier];
+    const rc   = document.getElementById('resultCard');
+    rc.innerHTML = `
+      <div class="result-tier-label" style="color:${tier.color}">${tier.emoji} ${tier.name} — ${tier.label}</div>
+      <div class="result-gun-name"  style="color:${tier.color}">${winner.gun}</div>`;
+    rc.style.borderColor = tier.color + '55';
+    rc.style.boxShadow   = `0 0 32px ${tier.color}1A`;
+    void rc.offsetWidth;
+    rc.classList.add('show');
+
+    addHistory(winner);
+    spinning = false;
+    document.getElementById('spinBtn').disabled = false;
+  }
+
+  function addHistory(winner) {
+    history.unshift(winner);
+    if (history.length > 10) history.pop();
+
+    const wrap = document.getElementById('historyWrap');
+    const list = document.getElementById('historyList');
+    wrap.style.display = 'block';
+    list.innerHTML = history.map(item => {
+      const t = TIERS[item.tier];
+      return `<div class="history-row">
+        <span class="history-gun">${item.gun}</span>
+        <span class="history-badge" style="color:${t.color};background:${t.color}22">${t.name}</span>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── FILTER BUTTONS ── */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.tier;
+      const allBtn = document.querySelector('[data-tier="all"]');
+
+      if (t === 'all') {
+        activeTiers = ['t0','t1','t15','t2'];
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        allBtn.classList.add('active');
+      } else {
+        allBtn.classList.remove('active');
+        if (activeTiers.includes(t)) {
+          if (activeTiers.length === 1) return;
+          activeTiers = activeTiers.filter(x => x !== t);
+          btn.classList.remove('active');
+        } else {
+          activeTiers.push(t);
+          btn.classList.add('active');
+        }
+        if (activeTiers.length === 4) allBtn.classList.add('active');
+      }
+      initStrip();
+    });
+  });
+
+  document.getElementById('spinBtn').addEventListener('click', spin);
+
+  /* ── BROWSE GRID ── */
+  function renderBrowse() {
+    document.getElementById('browseGrid').innerHTML = Object.entries(TIERS).map(([key, tier]) => `
+      <div class="tier-block">
+        <div class="tier-block-header">
+          <span class="tier-block-name" style="color:${tier.color}">${tier.emoji} ${tier.name}</span>
+          <span class="tier-block-sub">${tier.label}</span>
+        </div>
+        <div class="pills">
+          ${tier.guns.map(g => `<span class="pill ${key}">${g}</span>`).join('')}
+        </div>
+      </div>`).join('');
+  }
+
+  renderBrowse();
+  initStrip();
+</script>
+
+</body>
+</html>
